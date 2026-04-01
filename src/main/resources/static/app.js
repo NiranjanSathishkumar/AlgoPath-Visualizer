@@ -3,9 +3,13 @@
 //  · Local dev  → uses relative paths (same origin, port 8080)
 //  · Production → points to Render-hosted backend
 // ─────────────────────────────────────────────
-const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? ''  // relative — served by Spring Boot itself locally
-    : 'https://algopath-visualizer-api.onrender.com';
+const isLocal =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+
+const API_BASE_URL = isLocal
+  ? ""
+  : "https://algopath-visualizer-api.onrender.com";
 
 // ─────────────────────────────────────────────
 //  DOM References
