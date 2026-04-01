@@ -1,0 +1,29 @@
+# ─── Build output ──────────────────────────────────
+target/
+*.jar
+*.war
+*.class
+
+# ─── Logs ──────────────────────────────────────────
+*.log
+logs/
+
+# ─── Environment / secrets ─────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── IDE files ─────────────────────────────────────
+.idea/
+*.iml
+*.iws
+.vscode/
+*.swp
+*.swo
+
+# ─── OS generated ──────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Maven wrapper ─────────────────────────────────
+!.mvn/wrapper/maven-wrapper.jar

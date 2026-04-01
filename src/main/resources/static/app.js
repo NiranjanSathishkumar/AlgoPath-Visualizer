@@ -1,4 +1,13 @@
 // ─────────────────────────────────────────────
+//  API Base URL — resolves automatically per environment
+//  · Local dev  → uses relative paths (same origin, port 8080)
+//  · Production → points to Render-hosted backend
+// ─────────────────────────────────────────────
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? ''  // relative — served by Spring Boot itself locally
+    : 'https://algopath-visualizer-api.onrender.com';
+
+// ─────────────────────────────────────────────
 //  DOM References
 // ─────────────────────────────────────────────
 const gridContainer       = document.getElementById('maze-grid');
@@ -112,7 +121,7 @@ async function generateMaze() {
     const complexity = complexitySelect ? complexitySelect.value : 'MEDIUM';
 
     try {
-        const response = await fetch(`/maze/generate?width=${w}&height=${h}&complexity=${complexity}`);
+        const response = await fetch(`${API_BASE_URL}/maze/generate?width=${w}&height=${h}&complexity=${complexity}`);
         const data = await response.json();
 
         currentMazeData = data.maze;
@@ -137,7 +146,7 @@ async function solveMaze() {
     setStatus('Racing Solvers…', 'racing');
 
     try {
-        const response = await fetch('/maze/solve', { method: 'POST' });
+        const response = await fetch(`${API_BASE_URL}/maze/solve`, { method: 'POST' });
         if (response.ok) pollForResults();
     } catch (err) {
         console.error('Error solving maze:', err);
@@ -151,7 +160,7 @@ async function pollForResults() {
     let completeCount = 0;
 
     const pollInterval = setInterval(async () => {
-        const res          = await fetch('/maze/results');
+        const res          = await fetch(`${API_BASE_URL}/maze/results`);
         const resultsArray = await res.json();
 
         resultsArray.forEach(result => {
