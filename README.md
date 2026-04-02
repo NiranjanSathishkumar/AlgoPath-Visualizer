@@ -1,84 +1,289 @@
-# AlgoPath Visualizer
+<div align="center">
 
-**AlgoPath Visualizer** is a multithreaded web application designed to demonstrate and compare the performance of various pathfinding algorithms across randomly generated grids with weighted terrains. Using an intricate maze generation system and real-time frontend playback, it creates a visual "race" between algorithms to highlight their differences in operation and effectiveness.
+# 🧭 AlgoPath Visualizer
 
-![AlgoPath Demo Recording](screenshots/demo.webp)
+### *Watch five pathfinding algorithms race through weighted terrain — simultaneously.*
 
----
+<br/>
 
-## 🚀 Features
+[![Java](https://img.shields.io/badge/Java-17-007396?style=for-the-badge&logo=java&logoColor=white)](https://www.java.com/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.4-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES2023-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Deployed on Render](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://render.com/)
+[![Deployed on Netlify](https://img.shields.io/badge/Frontend-Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)](https://netlify.com/)
 
-- **Interactive Maze Generation:** Generates customizable mazes with adjustable width, height, and path complexity (loop density).
-- **Weighted Terrain System:** Features grid cells with distinct navigational costs:
-  - 🟩 Grass (x1 multiplier)
-  - 🟨 Sand (x3 multiplier)
-  - 🌲 Forest (x5 multiplier)
-  - 🌊 Water (x8 multiplier)
-  - ⛰️ Mountain (x12 multiplier)
-- **Competitive Algorithmic Racing:** Runs multiple pathfinding algorithms simultaneously on multi-threaded backend worker channels.
-- **Visual Playback:** Offers an interactive interface to watch nodes be selectively explored (frontier highlights) progressing to the final calculated path overlay. 
-- **Detailed Analytics Dashboard:** Analyzes race results quantitatively via an on-demand metrics dashboard plotting execution time, nodes explored, final steps taken, and optimal cumulative cost.
+<br/>
 
----
+![AlgoPath Visualizer — Full Interface](screenshots/01_main_ui.png)
 
-## 🧭 Implemented Algorithms
+<br/>
 
-The application simultaneously executes and records the following pathfinders:
+**[🚀 Live Demo](#getting-started) · [📸 Gallery](#-gallery) · [🏗 Architecture](#-architecture) · [⚙️ Running Locally](#-running-locally)**
 
-1. **Breadth-First Search (BFS):** Unweighted algorithm strictly attempting to find the path with the fewest number of steps from start to finish, ignoring terrain density differences entirely.
-2. **Depth-First Search (DFS):** Diving aggressively deep into structural loops. Mostly sub-optimal output.
-3. **A* Search Algorithm:** Calculates optimal heuristic estimates (combining path cost and distance). Consistently seeks and finds the lowest-cost path over the quickest node-distance.
-4. **Dijkstra's Algorithm:** Mathematically traverses lowest-cost pathways rigorously. Ultimately finds the same optimal path as A* but tends to explore more total nodes globally to guarantee correctness.
-5. **Greedy Best-First Search:** Driven solely by heuristic calculations (Manhattan distance to goal), blindly slicing down pathways ignoring cumulative terrain strain. Often incredibly fast to compute but frequently generates an expensive or non-optimal path.
+</div>
 
 ---
 
-## 📷 Screenshots
+## 📖 About The Project
 
-### 1. Main Application & Algorithm Progress
-> Demonstrates the core UI where mazes are rendered dynamically with various terrains. Algorithm results are stacked allowing interactive playback controls via the timeline below the grid.
+**AlgoPath Visualizer** is a full-stack web application that brings algorithmic theory to life. It generates complex, weighted terrain mazes and then unleashes **five pathfinding algorithms simultaneously** — letting you watch, compare, and analyze how each one navigates the same problem.
 
-![Main UI Screenshot](screenshots/main_ui.png)
+The project goes well beyond a typical toy visualizer:
 
-### 2. Algorithms in Action (Visual Replay)
-> Pathfinding algorithms are vividly animated, highlighting their different topological approaches. For instance, Dijkstra systematically radiates out factoring in weighted path strain perfectly, while A* pushes more aggressively towards the target.
+- 🔀 **Multithreaded backend** runs all algorithm simulations concurrently in Java threads
+- 🌍 **Weighted terrain system** means algorithms must make real cost-vs-speed trade-offs  
+- 🔁 **Complex maze generation** produces graphs with loops (cycles), not just trees  
+- 📊 **Performance analytics** expose granular execution metrics: time, nodes explored, steps, path cost  
+- 🖊️ **Interactive sandbox** lets you draw walls, move start/end points, and repaint terrain live  
 
-**Dijkstra's Algorithm (Lowest Cost Path):**
-![Dijkstra Algorithm Running](screenshots/dijkstra_playing.png)
-
-**A* Search (Heuristic Oriented):**
-![A* Search Running](screenshots/astar_playing.png)
-
-### 3. Performance Summary Results Modal
-> Consolidates metrics for all competing algorithms in an ascending/descending sortable layout for rapid comparative analysis.
-
-![Results Modal Screenshot](screenshots/results_modal.png)
+It's built to demonstrate real computer science knowledge — from graph theory and heuristics to concurrent Java programming and modern frontend architecture.
 
 ---
 
-## 🛠️ Technology Stack
+## ✨ Feature Highlights
 
-- **Backend:** Java 17, Spring Boot, Object-Oriented Multi-Threading.
-- **Frontend:** Vanilla JavaScript (ES6+), HTML5, CSS3. (No external component libraries to ensure maximum DOM animation layout performance).
-- **Build Tool:** Maven
+### ⚡ Algorithm Race Mode
+
+Hit **Race** and all five algorithms launch simultaneously in parallel Java threads. Watch each algorithm's frontier expand in real-time across the shared grid canvas.
+
+![Algorithm Race Results Modal](screenshots/03_race_running.png)
+
+The **Race Results Summary** modal breaks down every metric by algorithm — sortable by column — so you can instantly compare their trade-offs.
 
 ---
 
-## 💻 Getting Started (Local Development)
+### 🗺️ Weighted Terrain System
+
+The grid isn't flat. Every cell has a **terrain type** that changes its traversal cost. Algorithms that account for weights (A\*, Dijkstra) will avoid expensive terrain to find cheaper routes, while unweighted algorithms (BFS, DFS) ignore costs entirely.
+
+![Terrain Legend and Algorithm Result Cards](screenshots/04_legend.png)
+
+| Terrain | Color | Cost Multiplier |
+|:--------|:-----:|:---------------:|
+| 🌿 Grass | Green | ×1 |
+| 🏜️ Sand | Yellow | ×3 |
+| 🌲 Forest | Dark Green | ×5 |
+| 💧 Water | Blue | ×8 |
+| ⛰️ Mountain | Brown | ×12 |
+| 🧱 Wall | Black | ∞ (impassable) |
+
+The floating **Legend** (bottom-left) is always accessible without cluttering the main UI.
+
+---
+
+### 📊 Algorithm Results Sidebar
+
+After each race, the right sidebar fills with live metric cards for all five algorithms. Each card shows:
+
+![Algorithm Metrics Sidebar](screenshots/05_algo_cards.png)
+
+- **Time (ms)** — wall-clock execution duration
+- **Explored** — total nodes evaluated during traversal
+- **Steps** — final path length in cells
+- **Cost** — weighted sum of all terrain costs along the path
+
+Click any card to **replay** that specific algorithm's animation on the grid.
+
+---
+
+### 🖊️ Interactive Sandbox Mode
+
+Toggle **Interactive Mode** to enter an isolated editing environment where the grid becomes a canvas:
+
+- **Left-click drag** → draw walls
+- **Right-click drag** → erase cells  
+- **Drag Start/End nodes** → reposition them anywhere
+- **Terrain painting** → switch terrain types and paint directly
+
+The mode toggle locks/unlocks UI controls to prevent accidental interference during editing.
+
+---
+
+### 🔁 Complex Maze Generation
+
+Mazes aren't just perfect trees. A configurable **Loops** parameter injects extra connections into the generated graph, creating cycles and multiple valid paths — exactly the kind of complex graph structure that stress-tests real-world routing algorithms.
+
+![Fresh Maze with Weighted Terrain](screenshots/02_fresh_maze.png)
+
+Configure **Width**, **Height**, and **Loop density** directly in the top navigation bar, then click **New Maze** to regenerate instantly.
+
+---
+
+### 🏁 No-Solution Detection
+
+If the start and end nodes are isolated by walls or terrain, the system detects the mathematical impossibility and surfaces a clear **"No Solution Found"** notification rather than hanging or silently failing.
+
+---
+
+## 🏎️ Algorithms Implemented
+
+| Algorithm | Strategy | Weighted? | Path Optimal? | Best For |
+|:----------|:---------|:---------:|:-------------:|:---------|
+| **A\* Search** | Heuristic (Manhattan distance) | ✅ | ✅ | Fastest optimal weighted search |
+| **Dijkstra** | Lowest-cost-first | ✅ | ✅ | Exhaustive weighted correctness |
+| **BFS** | Breadth-first, level-by-level | ❌ | ✅ (unweighted) | Shortest hop count |
+| **DFS** | Depth-first, backtracking | ❌ | ❌ | Maze generation / stress test |
+| **Greedy Best-First** | Heuristic only, no cost backtrack | ❌ | ❌ | Speed over correctness |
+
+> **Key insight from the race results:** A\* and Dijkstra consistently find the lowest cost path (same cost number), but A\* explores significantly fewer nodes thanks to its Manhattan distance heuristic — demonstrating why heuristics matter in large graphs.
+
+---
+
+## 🏗 Architecture
+
+The project decouples heavyweight algorithm computation from UI rendering via a clean client-server separation.
+
+```
+┌─────────────────────────────────┐     HTTP/REST      ┌──────────────────────────────────┐
+│         FRONTEND                │ ◄─────────────────► │          BACKEND                  │
+│  Vanilla HTML + CSS + JS        │                     │  Java 17 · Spring Boot 3.2.4      │
+│  Netlify (Static Hosting)       │                     │  Render (Free Tier)               │
+│                                 │                     │                                   │
+│  • Grid canvas rendering        │     POST /maze      │  • Maze graph construction        │
+│  • Animation frame scheduling   │     POST /solve     │  • Terrain generation             │
+│  • Interactive drag events      │                     │  • Algorithm execution            │
+│  • Results modal & cards        │  ◄── JSON frames ── │  • Multithreaded simulation       │
+│  • Legend, zoom, fit-to-screen  │                     │  • Path serialization             │
+└─────────────────────────────────┘                     └──────────────────────────────────┘
+```
+
+### Backend (`src/main/java/`)
+
+| Component | Responsibility |
+|:----------|:--------------|
+| `MazeController` | REST endpoints for maze generation and solving |
+| `MazeService` | Orchestrates parallel algorithm execution via thread pool |
+| `Maze` | Graph model with loop injection and cycle creation |
+| `Cell` | Node model: coordinates, terrain type, traversal cost |
+| `TerrainGenerator` | Procedural terrain distribution across grid |
+| `AStar / Dijkstra / BFS / DFS / Greedy` | Independent algorithm implementations |
+
+### Frontend (`src/main/resources/static/`)
+
+| Component | Responsibility |
+|:----------|:--------------|
+| `index.html` | SPA shell with semantic structure |
+| `app.js` | Core grid rendering, animation loop, event wiring |
+| `maze-api.js` | REST client, request/response lifecycle |
+| `results.js` | Modal rendering, column sort, replay triggers |
+| `index.css` | Full dark-theme design system, animations, legend |
+
+---
+
+## 📸 Gallery
+
+<table>
+  <tr>
+    <td width="50%">
+      <strong>Main Interface — Initial Load</strong><br/>
+      <img src="screenshots/01_main_ui.png" alt="Main UI" width="100%"/>
+    </td>
+    <td width="50%">
+      <strong>Fresh Weighted Terrain Maze</strong><br/>
+      <img src="screenshots/02_fresh_maze.png" alt="Fresh Maze" width="100%"/>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <strong>Race Results Summary Modal</strong><br/>
+      <img src="screenshots/03_race_running.png" alt="Results Modal" width="100%"/>
+    </td>
+    <td width="50%">
+      <strong>Terrain Legend + Algo Cards</strong><br/>
+      <img src="screenshots/04_legend.png" alt="Legend and Cards" width="100%"/>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <strong>Algorithm Metrics Sidebar</strong><br/>
+      <img src="screenshots/05_algo_cards.png" alt="Algorithm Cards" width="100%"/>
+    </td>
+    <td width="50%">
+      <strong>Full Dashboard View</strong><br/>
+      <img src="screenshots/06_full_view.png" alt="Full View" width="100%"/>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <strong>Final Race — All Paths Rendered Simultaneously</strong><br/>
+      <img src="screenshots/07_final_race.png" alt="Final Race" width="100%"/>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🚀 Running Locally
 
 ### Prerequisites
-- JDK 17+
-- Maven installed
 
-### Running the Application
+| Tool | Version |
+|:-----|:--------|
+| JDK  | 17 or higher |
+| Maven | 3.6+ (or use included wrapper) |
 
-1. Open your terminal in the root directory.
-2. Build and launch the Spring Boot server using Maven:
-   ```bash
-   mvn spring-boot:run
-   ```
-3. Open a modern web browser and navigate to:
-   ```
-   http://localhost:8080
-   ```
-4. Click **New Maze** to initialize a terrain landscape, then click **Race** to observe paths forming!
+### Steps
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/NiranjanSathishkumar/AlgoPath-Visualizer.git
+cd AlgoPath-Visualizer
+```
+
+**2. Start the Spring Boot server**
+
+*Linux / macOS:*
+```bash
+./mvnw spring-boot:run
+```
+
+*Windows:*
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+**3. Open in your browser**
+```
+http://localhost:8080
+```
+
+The static frontend assets are served directly by Spring Web — no separate npm install or frontend build step required.
+
+---
+
+## ☁️ Deployment
+
+The project uses a **100% free** cloud stack with zero ongoing cost:
+
+| Layer | Platform | Notes |
+|:------|:---------|:------|
+| Backend API | [Render](https://render.com/) | Free tier · auto-deploy from GitHub |
+| Frontend | [Netlify](https://netlify.com/) | Static hosting · CDN-served |
+| Database | *(none needed)* | All state is in-memory per request |
+
+> ⚠️ **Cold Start Warning:** Render's free tier spins down idle services. The first API request after inactivity may take **~30 seconds** while the server wakes up. Subsequent requests are instant.
+
+The `render.yaml` and `netlify.toml` files in the repo root define the full deployment configuration including security headers and SPA routing rules.
+
+---
+
+## 🧠 Key Design Decisions
+
+**Why vanilla JS on the frontend?**  
+DOM manipulation at grid-cell granularity (thousands of cells per frame) benefits from fine-grained control without framework overhead. Vanilla JS gives full access to animation timing, event batching, and rendering pipelines.
+
+**Why Spring Boot for a visualizer?**  
+The backend isn't just serving static files — it performs real concurrent computation. Java's thread model, priority queues (for Dijkstra/A\*), and structured concurrency make it a natural fit for parallel algorithm simulation.
+
+**Why separate frontend deployment from backend?**  
+Decoupling lets the Netlify CDN serve the UI globally with zero latency while the compute-heavy Render backend only gets hit when a maze is generated or solved. This mirrors production microservice architecture.
+
+---
+
+<div align="center">
+
+**Built to demonstrate full-stack engineering, algorithmic depth, and modern UI/UX design.**
+
+*AlgoPath Visualizer — where computer science theory becomes interactive.*
+
+</div>
