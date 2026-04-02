@@ -65,8 +65,10 @@ let activeAlgorithm = null;
 let currentAnimationStep = 0;
 let isAnimatingPath = false;
 let activeAnimationTimeout = null;
+let activePollInterval = null;
 
 // Drawing state
+let isInteractiveMode = false;
 let activeTool = 'START';
 let isPainting = false;
 let customStart = null;
@@ -229,9 +231,15 @@ async function solveMaze() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        if (response.ok) pollForResults();
+        if (response.ok) {
+            pollForResults();
+        } else {
+            console.error('Failed to solve maze: HTTP', response.status);
+            setStatus('Solve Error', 'waiting');
+        }
     } catch (err) {
         console.error('Error solving maze:', err);
+        setStatus('Error', 'waiting');
     }
 }
 
@@ -240,24 +248,37 @@ async function solveMaze() {
 // ─────────────────────────────────────────────
 async function pollForResults() {
     let completeCount = 0;
+    
+    if (activePollInterval) clearInterval(activePollInterval);
 
-    const pollInterval = setInterval(async () => {
-        const res = await fetch(`${API_BASE_URL}/maze/results`);
-        const resultsArray = await res.json();
-
-        resultsArray.forEach(result => {
-            const algo = result.algorithmName;
-            if (!currentResults[algo]) {
-                completeCount++;
-                currentResults[algo] = result;
-                populateCard(algo, result);
+    activePollInterval = setInterval(async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/maze/results`);
+            if (!res.ok) {
+                clearInterval(activePollInterval);
+                setStatus('Poll Error', 'waiting');
+                return;
             }
-        });
+            const resultsArray = await res.json();
 
-        if (completeCount >= 5) {
-            clearInterval(pollInterval);
-            setStatus('Race Complete!', 'complete');
-            computeWinners();
+            resultsArray.forEach(result => {
+                const algo = result.algorithmName;
+                if (!currentResults[algo]) {
+                    completeCount++;
+                    currentResults[algo] = result;
+                    populateCard(algo, result);
+                }
+            });
+
+            if (completeCount >= 5) {
+                clearInterval(activePollInterval);
+                setStatus('Race Complete!', 'complete');
+                computeWinners();
+            }
+        } catch (err) {
+            console.error('Poll failed:', err);
+            clearInterval(activePollInterval);
+            setStatus('Server Error', 'waiting');
         }
     }, 100);
 }
@@ -483,6 +504,7 @@ function renderStaticGrid(mazeObj) {
 }
 
 function applyToolToCell(domCell, r, c) {
+    if (!isInteractiveMode) return;
     if (!activeTool) return;
     if (activeTool === 'START') {
         document.querySelectorAll('.maze-cell.start').forEach(el => el.classList.remove('start'));
@@ -520,6 +542,8 @@ function enterInteractiveMode() {
     savedChangedCells = JSON.parse(JSON.stringify(changedCells));
     savedStart = customStart ? { ...customStart } : null;
     savedEnd = customEnd ? { ...customEnd } : null;
+    
+    isInteractiveMode = true;
 }
 
 function saveInteractiveMode() {
@@ -527,6 +551,8 @@ function saveInteractiveMode() {
     if (navInteractive) navInteractive.style.display = 'none';
     if (sidePanel) sidePanel.style.display = 'flex';
     if (toolsPalette) toolsPalette.style.display = 'none';
+    
+    isInteractiveMode = false;
     
     // Automatically trigger race
     setTimeout(solveMaze, 150);
@@ -537,6 +563,8 @@ function discardInteractiveMode() {
     if (navInteractive) navInteractive.style.display = 'none';
     if (sidePanel) sidePanel.style.display = 'flex';
     if (toolsPalette) toolsPalette.style.display = 'none';
+    
+    isInteractiveMode = false;
     
     changedCells = savedChangedCells;
     customStart = savedStart;

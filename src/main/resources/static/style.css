@@ -390,6 +390,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    /* bottom padding keeps the maze clear of floating controls */
+    padding-bottom: 3.5rem;
 }
 .grid-viewport:active { cursor: grabbing; }
 .grid-viewport::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -1089,24 +1091,24 @@ body {
     #portrait-overlay { display: flex !important; }
 }
 
-/* Landscape mobile / Small screens up to 960px */
+/* ── Landscape mobile / Small screens up to 960px ── */
 @media screen and (max-width: 960px) {
     .brand-tagline { display: none; }
     .brand { margin-right: 0; }
-    
+
     .nav-controls { gap: 0.35rem; }
     .param-group label { display: none; }
-    
+
     .param-input { width: 44px; padding: 0.3rem; }
     .param-select { padding-right: 1.2rem; padding-left: 0.4rem; background-position: right 0.3rem center; }
-    
+
     .btn { padding: 0.35rem 0.6rem; font-size: 0.75rem; }
-    .btn svg { width: 12px; height: 12px; margin-right: 2px; }
-    
+    .btn svg { width: 12px; height: 12px; }
+
     .status-chip { font-size: 0.68rem; }
-    
+
     #btn-toggle-panel { display: inline-flex; }
-    
+
     /* Collapsible side panel over the canvas */
     .panel {
         position: fixed;
@@ -1122,25 +1124,80 @@ body {
         max-width: 80vw;
         border-left: 1px solid var(--border-hi);
     }
-    
-    .panel.panel-open {
-        right: 0;
+    .panel.panel-open { right: 0; }
+
+    .playback-bar  { bottom: 0.75rem; }
+    .legend-trigger { bottom: 0.75rem; left: 0.75rem; }
+    .legend-panel   { bottom: calc(0.75rem + 36px + 10px); left: 0.75rem; }
+    .zoom-bar       { bottom: 0.75rem; right: 0.75rem; }
+}
+
+/* ── Very small landscape phones (≤ 680px wide) ── */
+@media screen and (max-width: 680px) and (orientation: landscape) {
+    /* Brand: icon only, hide text */
+    .brand-name { display: none; }
+    .brand { gap: 0; }
+
+    /* Shrink inputs further */
+    .param-input { width: 36px; font-size: 0.75rem; }
+    .param-sep   { font-size: 0.68rem; margin: 0; }
+
+    /* Hide text labels inside buttons — show icon only */
+    .btn-text { display: none; }
+    .btn      { padding: 0.35rem 0.45rem; gap: 0; }
+    .btn svg  { width: 14px; height: 14px; margin: 0; }
+
+    /* Shorten interactive mode label */
+    .interactive-label { display: none; }
+
+    /* Compress playback pill */
+    .playback-bar { gap: 0.4rem; padding: 0.4rem 0.65rem; }
+    .pb-label     { min-width: 60px; font-size: 0.65rem; }
+    .pb-speed     { padding-left: 0.45rem; }
+    .speed-slider { width: 56px; }
+
+    /* Tools palette: horizontal strip at top-left instead of vertical */
+    .tools-palette {
+        flex-direction: row;
+        top: auto;
+        bottom: 5rem;   /* sits above the playback pill */
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.35rem 0.5rem;
+        gap: 0.3rem;
     }
-    
-    .playback-bar {
-        bottom: 0.75rem;
-    }
-    
-    .legend-trigger {
-        bottom: 0.75rem;
-        left: 0.75rem;
-    }
-    .legend-panel {
-        bottom: calc(0.75rem + 36px + 10px);
-        left: 0.75rem;
-    }
-    .zoom-bar {
-        bottom: 0.75rem;
-        right: 0.75rem;
+    .tool-divider {
+        width: 1px;
+        height: 20px;
+        margin: 0 0.1rem;
     }
 }
+
+/* ── Landscape phones with very tight height (≤ 420px tall) ── */
+@media screen and (max-height: 420px) and (orientation: landscape) {
+    :root { --topbar-h: 48px; }
+
+    .brand-logo  { width: 28px; height: 28px; }
+    .btn         { padding: 0.28rem 0.45rem; font-size: 0.72rem; }
+    .param-input { padding: 0.22rem 0.3rem; }
+
+    /* Move floating elements closer to edges */
+    .playback-bar  { bottom: 0.45rem; padding: 0.36rem 0.7rem; gap: 0.45rem; }
+    .legend-trigger { bottom: 0.45rem; left: 0.45rem; }
+    .legend-panel   { bottom: calc(0.45rem + 36px + 8px); left: 0.45rem; }
+    .zoom-bar       { bottom: 0.45rem; right: 0.45rem; }
+
+    /* Tools palette: even more compact */
+    .tools-palette {
+        flex-direction: row;
+        bottom: 4.2rem;
+        top: auto;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Shrink panel header */
+    .panel-header { padding: 0.75rem 0.9rem 0.6rem; }
+    .cards-list   { gap: 0.5rem; padding: 0.7rem 0.75rem; }
+}
+
