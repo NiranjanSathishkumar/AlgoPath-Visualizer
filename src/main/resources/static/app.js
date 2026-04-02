@@ -4,73 +4,75 @@
 //  · Production → points to Render-hosted backend
 // ─────────────────────────────────────────────
 const isLocal =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
 
 const API_BASE_URL = isLocal
-  ? ""
-  : "https://algopath-visualizer-api.onrender.com";
+    ? ""
+    : "https://algopath-visualizer-api.onrender.com";
 
 // ─────────────────────────────────────────────
 //  DOM References
 // ─────────────────────────────────────────────
-const gridContainer       = document.getElementById('maze-grid');
-const btnGenerate         = document.getElementById('btn-generate');
-const btnSolve            = document.getElementById('btn-solve');
-const btnResults          = document.getElementById('btn-results');
-const widthInput          = document.getElementById('maze-width');
-const heightInput         = document.getElementById('maze-height');
-const complexitySelect    = document.getElementById('maze-complexity');
-const statusBadge         = document.getElementById('race-status');
-const emptyState          = document.getElementById('empty-state');
-const resultsModal        = document.getElementById('results-modal');
-const btnCloseModal       = document.getElementById('btn-close-modal');
-const resultsTbody        = document.getElementById('results-tbody');
+const gridContainer = document.getElementById('maze-grid');
+const btnGenerate = document.getElementById('btn-generate');
+const btnSolve = document.getElementById('btn-solve');
+const btnResults = document.getElementById('btn-results');
+const widthInput = document.getElementById('maze-width');
+const heightInput = document.getElementById('maze-height');
+const complexitySelect = document.getElementById('maze-complexity');
+const statusBadge = document.getElementById('race-status');
+const emptyState = document.getElementById('empty-state');
+const resultsModal = document.getElementById('results-modal');
+const btnCloseModal = document.getElementById('btn-close-modal');
+const resultsTbody = document.getElementById('results-tbody');
+const btnTogglePanel = document.getElementById('btn-toggle-panel');
+const sidePanel = document.querySelector('.panel');
 
 // Playback
-const toolbar             = document.getElementById('toolbar');
-const labelAlgo           = document.getElementById('active-algo-label');
-const btnPlay             = document.getElementById('btn-play');
-const btnPause            = document.getElementById('btn-pause');
-const btnReset            = document.getElementById('btn-reset');
-const speedSlider         = document.getElementById('speed-slider');
+const toolbar = document.getElementById('toolbar');
+const labelAlgo = document.getElementById('active-algo-label');
+const btnPlay = document.getElementById('btn-play');
+const btnPause = document.getElementById('btn-pause');
+const btnReset = document.getElementById('btn-reset');
+const speedSlider = document.getElementById('speed-slider');
 
 // View / Zoom / Pan
-const viewport            = document.getElementById('grid-viewport');
-const transformLayer      = document.getElementById('grid-transform-layer');
-const btnZoomIn           = document.getElementById('btn-zoom-in');
-const btnZoomOut          = document.getElementById('btn-zoom-out');
-const btnFit              = document.getElementById('btn-fit');
-const zoomLabel           = document.getElementById('zoom-label');
+const viewport = document.getElementById('grid-viewport');
+const transformLayer = document.getElementById('grid-transform-layer');
+const btnZoomIn = document.getElementById('btn-zoom-in');
+const btnZoomOut = document.getElementById('btn-zoom-out');
+const btnFit = document.getElementById('btn-fit');
+const zoomLabel = document.getElementById('zoom-label');
 
 // ─────────────────────────────────────────────
 //  Application State
 // ─────────────────────────────────────────────
-let currentMazeData       = null;
-let currentResults        = {};
-let playbackState         = 'STOPPED';   // PLAYING | PAUSED | STOPPED
-let activeAlgorithm       = null;
-let currentAnimationStep  = 0;
-let isAnimatingPath       = false;
+let currentMazeData = null;
+let currentResults = {};
+let playbackState = 'STOPPED';   // PLAYING | PAUSED | STOPPED
+let activeAlgorithm = null;
+let currentAnimationStep = 0;
+let isAnimatingPath = false;
 let activeAnimationTimeout = null;
 
 // Cell pixel size used when rendering (not affected by CSS zoom)
-let CELL_PX               = 20;
+let CELL_PX = 20;
 
 // ─────────────────────────────────────────────
 //  Zoom / Pan State
 // ─────────────────────────────────────────────
 const ZOOM_STEP = 0.15;
-const ZOOM_MIN  = 0.25;
-const ZOOM_MAX  = 4.0;
-let   zoomLevel = 1.0;
+const ZOOM_MIN = 0.25;
+const ZOOM_MAX = 4.0;
+let zoomLevel = 1.0;
 
 // Pan (drag) state
-let isPanning   = false;
-let panStartX   = 0;
-let panStartY   = 0;
-let panScrollX  = 0;
-let panScrollY  = 0;
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+let panScrollX = 0;
+let panScrollY = 0;
 
 // ─────────────────────────────────────────────
 //  Initialisation
@@ -97,18 +99,34 @@ document.addEventListener('DOMContentLoaded', () => {
     btnPause.addEventListener('click', pausePlayback);
     btnReset.addEventListener('click', resetPlayback);
 
+    if (btnTogglePanel && sidePanel) {
+        btnTogglePanel.addEventListener('click', () => {
+            const isOpen = sidePanel.classList.toggle('panel-open');
+            btnTogglePanel.classList.toggle('active', isOpen);
+        });
+
+        // Close panel when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 900 && sidePanel.classList.contains('panel-open') &&
+                !sidePanel.contains(e.target) && !btnTogglePanel.contains(e.target)) {
+                sidePanel.classList.remove('panel-open');
+                btnTogglePanel.classList.remove('active');
+            }
+        });
+    }
+
     // Zoom buttons
-    btnZoomIn.addEventListener('click',  () => applyZoom(zoomLevel + ZOOM_STEP));
+    btnZoomIn.addEventListener('click', () => applyZoom(zoomLevel + ZOOM_STEP));
     btnZoomOut.addEventListener('click', () => applyZoom(zoomLevel - ZOOM_STEP));
-    btnFit.addEventListener('click',     fitToScreen);
+    btnFit.addEventListener('click', fitToScreen);
 
     // Mouse-wheel zoom (Ctrl + scroll = zoom, plain scroll = pan)
     viewport.addEventListener('wheel', onWheel, { passive: false });
 
     // Pan via click-drag
     viewport.addEventListener('mousedown', onPanStart);
-    window.addEventListener('mousemove',  onPanMove);
-    window.addEventListener('mouseup',    onPanEnd);
+    window.addEventListener('mousemove', onPanMove);
+    window.addEventListener('mouseup', onPanEnd);
 });
 
 // ─────────────────────────────────────────────
@@ -120,8 +138,8 @@ async function generateMaze() {
     setStatus('Generating…', 'waiting');
     hideEmptyState(false);
 
-    const w          = parseInt(widthInput.value, 10)  || 30;
-    const h          = parseInt(heightInput.value, 10) || 15;
+    const w = parseInt(widthInput.value, 10) || 30;
+    const h = parseInt(heightInput.value, 10) || 15;
     const complexity = complexitySelect ? complexitySelect.value : 'MEDIUM';
 
     try {
@@ -164,7 +182,7 @@ async function pollForResults() {
     let completeCount = 0;
 
     const pollInterval = setInterval(async () => {
-        const res          = await fetch(`${API_BASE_URL}/maze/results`);
+        const res = await fetch(`${API_BASE_URL}/maze/results`);
         const resultsArray = await res.json();
 
         resultsArray.forEach(result => {
@@ -217,11 +235,11 @@ function closeResultsModal() {
 function populateTable() {
     if (!resultsTbody) return;
     resultsTbody.innerHTML = '';
-    
+
     let rowsData = Object.values(currentResults).map(r => {
         let name = r.algorithmName.replace('Solver', '');
         if (name === 'GreedyBestFirst') name = 'Greedy';
-        
+
         let color = '#38bdf8';
         if (name.includes('DFS')) color = '#f472b6';
         if (name.includes('AStar')) color = '#fb923c';
@@ -274,12 +292,12 @@ function sortTable(key, thElement) {
         currentSortKey = key;
         currentSortAsc = true;
     }
-    
+
     document.querySelectorAll('#results-table th').forEach(th => {
         th.classList.remove('sorted-asc', 'sorted-desc');
     });
     thElement.classList.add(currentSortAsc ? 'sorted-asc' : 'sorted-desc');
-    
+
     populateTable();
 }
 
@@ -290,10 +308,10 @@ function populateCard(algo, result) {
     const card = document.getElementById(`card-${algo}`);
     if (!card) return;
     card.classList.add('has-data');
-    card.querySelector('.time').textContent  = `${result.executionTimeMs} ms`;
+    card.querySelector('.time').textContent = `${result.executionTimeMs} ms`;
     card.querySelector('.nodes').textContent = result.nodesExplored;
-    card.querySelector('.path').textContent  = result.pathLength;
-    card.querySelector('.cost').textContent  = result.pathCost;
+    card.querySelector('.path').textContent = result.pathLength;
+    card.querySelector('.cost').textContent = result.pathCost;
 }
 
 function resetDashboard() {
@@ -306,22 +324,23 @@ function resetDashboard() {
 
     document.querySelectorAll('.algo-card').forEach(card => {
         card.classList.remove('has-data', 'playing');
-        card.querySelector('.time').textContent  = '—';
+        card.querySelector('.time').textContent = '—';
         card.querySelector('.nodes').textContent = '—';
-        card.querySelector('.path').textContent  = '—';
-        card.querySelector('.cost').textContent  = '—';
+        card.querySelector('.path').textContent = '—';
+        card.querySelector('.cost').textContent = '—';
     });
 }
 
 function setStatus(text, cls) {
-    const dot = statusBadge.querySelector('.status-dot');
-    statusBadge.className   = `status-chip ${cls}`;
-    // Re-insert the dot then append text node
-    statusBadge.innerHTML   = '';
+    statusBadge.className = `status-chip ${cls}`;
+    statusBadge.innerHTML = '';
     const dotEl = document.createElement('span');
     dotEl.className = 'status-dot';
+    const textEl = document.createElement('span');
+    textEl.className = 'status-text';
+    textEl.textContent = text;
     statusBadge.appendChild(dotEl);
-    statusBadge.appendChild(document.createTextNode(text));
+    statusBadge.appendChild(textEl);
 }
 
 function hideEmptyState(hidden) {
@@ -336,7 +355,7 @@ function renderStaticGrid(mazeObj) {
     const h = mazeObj.height;
 
     gridContainer.style.gridTemplateColumns = `repeat(${w}, ${CELL_PX}px)`;
-    gridContainer.style.gridTemplateRows    = `repeat(${h}, ${CELL_PX}px)`;
+    gridContainer.style.gridTemplateRows = `repeat(${h}, ${CELL_PX}px)`;
     gridContainer.innerHTML = '';
 
     mazeObj.grid.forEach(row => {
@@ -345,13 +364,13 @@ function renderStaticGrid(mazeObj) {
             cell.classList.add('maze-cell');
             cell.id = `cell-${cellObj.row}-${cellObj.column}`;
 
-            cell.style.width  = `${CELL_PX}px`;
+            cell.style.width = `${CELL_PX}px`;
             cell.style.height = `${CELL_PX}px`;
 
-            if (!cellObj.topWall)    cell.style.borderTop    = 'none';
-            if (!cellObj.rightWall)  cell.style.borderRight  = 'none';
+            if (!cellObj.topWall) cell.style.borderTop = 'none';
+            if (!cellObj.rightWall) cell.style.borderRight = 'none';
             if (!cellObj.bottomWall) cell.style.borderBottom = 'none';
-            if (!cellObj.leftWall)   cell.style.borderLeft   = 'none';
+            if (!cellObj.leftWall) cell.style.borderLeft = 'none';
 
             // Apply terrain type for styling
             if (cellObj.terrain) {
@@ -377,10 +396,10 @@ function clearGrid() {
 //  5. Engine Controls
 // ─────────────────────────────────────────────
 function stopEngineFully() {
-    playbackState        = 'STOPPED';
-    activeAlgorithm      = null;
+    playbackState = 'STOPPED';
+    activeAlgorithm = null;
     currentAnimationStep = 0;
-    isAnimatingPath      = false;
+    isAnimatingPath = false;
     if (activeAnimationTimeout) clearTimeout(activeAnimationTimeout);
 
     document.querySelectorAll('.maze-cell.visited, .maze-cell.path').forEach(el => {
@@ -398,8 +417,8 @@ window.playAlgorithm = function (algo) {
     const activeCard = document.getElementById(`card-${algo}`);
     if (activeCard) activeCard.classList.add('playing');
 
-    activeAlgorithm       = algo;
-    const shortName = algo.replace('Solver','');
+    activeAlgorithm = algo;
+    const shortName = algo.replace('Solver', '');
     labelAlgo.textContent = `▶  ${shortName}`;
     toolbar.style.display = 'flex';
 
@@ -427,7 +446,7 @@ function resetPlayback() {
     const retain = activeAlgorithm;
     stopEngineFully();
     activeAlgorithm = retain;
-    playbackState   = 'STOPPED';
+    playbackState = 'STOPPED';
 }
 
 // ─────────────────────────────────────────────
@@ -438,7 +457,7 @@ function animateFrontierLoop(visitedNodes, finalPath) {
     const delay = parseInt(speedSlider.value, 10);
 
     if (currentAnimationStep < visitedNodes.length) {
-        const node    = visitedNodes[currentAnimationStep];
+        const node = visitedNodes[currentAnimationStep];
         const domNode = document.getElementById(`cell-${node.row}-${node.column}`);
         if (domNode && !domNode.classList.contains('start') && !domNode.classList.contains('end')) {
             domNode.classList.add('visited');
@@ -446,7 +465,7 @@ function animateFrontierLoop(visitedNodes, finalPath) {
         currentAnimationStep++;
         activeAnimationTimeout = setTimeout(() => animateFrontierLoop(visitedNodes, finalPath), delay);
     } else {
-        isAnimatingPath      = true;
+        isAnimatingPath = true;
         currentAnimationStep = 0;
         animatePathLoop(finalPath);
     }
@@ -457,7 +476,7 @@ function animatePathLoop(pathArray) {
     const delay = Math.max(10, parseInt(speedSlider.value, 10) / 2);
 
     if (currentAnimationStep < pathArray.length) {
-        const node    = pathArray[currentAnimationStep];
+        const node = pathArray[currentAnimationStep];
         const domNode = document.getElementById(`cell-${node.row}-${node.column}`);
         if (domNode && !domNode.classList.contains('start') && !domNode.classList.contains('end')) {
             domNode.classList.add('path');
@@ -465,8 +484,8 @@ function animatePathLoop(pathArray) {
         currentAnimationStep++;
         activeAnimationTimeout = setTimeout(() => animatePathLoop(pathArray), delay);
     } else {
-        playbackState         = 'STOPPED';
-        const shortName2 = activeAlgorithm ? activeAlgorithm.replace('Solver','') : '';
+        playbackState = 'STOPPED';
+        const shortName2 = activeAlgorithm ? activeAlgorithm.replace('Solver', '') : '';
         labelAlgo.textContent = `${shortName2}  ·  Done`;
     }
 }
@@ -481,7 +500,7 @@ function applyZoom(newZoom, pivotX, pivotY) {
     if (pivotX !== undefined && pivotY !== undefined) {
         const ratio = clamped / zoomLevel;
         viewport.scrollLeft = (viewport.scrollLeft + pivotX) * ratio - pivotX;
-        viewport.scrollTop  = (viewport.scrollTop  + pivotY) * ratio - pivotY;
+        viewport.scrollTop = (viewport.scrollTop + pivotY) * ratio - pivotY;
     }
 
     zoomLevel = clamped;
@@ -512,10 +531,10 @@ function fitToScreen() {
 function onWheel(e) {
     if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
-        const rect   = viewport.getBoundingClientRect();
+        const rect = viewport.getBoundingClientRect();
         const pivotX = e.clientX - rect.left;
         const pivotY = e.clientY - rect.top;
-        const delta  = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
+        const delta = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
         applyZoom(zoomLevel + delta, pivotX, pivotY);
     }
     // plain scroll is handled natively by overflow:scroll
@@ -526,9 +545,9 @@ function onWheel(e) {
 // ─────────────────────────────────────────────
 function onPanStart(e) {
     if (e.button !== 0) return;
-    isPanning  = true;
-    panStartX  = e.clientX;
-    panStartY  = e.clientY;
+    isPanning = true;
+    panStartX = e.clientX;
+    panStartY = e.clientY;
     panScrollX = viewport.scrollLeft;
     panScrollY = viewport.scrollTop;
     viewport.style.cursor = 'grabbing';
@@ -539,7 +558,7 @@ function onPanMove(e) {
     const dx = e.clientX - panStartX;
     const dy = e.clientY - panStartY;
     viewport.scrollLeft = panScrollX - dx;
-    viewport.scrollTop  = panScrollY - dy;
+    viewport.scrollTop = panScrollY - dy;
 }
 
 function onPanEnd() {
@@ -553,7 +572,7 @@ function onPanEnd() {
 // ─────────────────────────────────────────────
 (function () {
     const trigger = document.getElementById('legend-trigger');
-    const panel   = document.getElementById('legend-panel');
+    const panel = document.getElementById('legend-panel');
     if (!trigger || !panel) return;
 
     // Toggle on tap (mobile) — hover handled by CSS
