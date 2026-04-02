@@ -6,7 +6,9 @@ import model.Cell;
 import model.Maze;
 import model.MazeComplexity;
 import model.dto.MazeResponse;
+import model.dto.SolveRequest;
 import model.dto.SolverResult;
+import model.TerrainType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,14 +69,37 @@ public class MazeController {
     }
 
     @PostMapping("/solve")
-    public ResponseEntity<String> solveMaze() {
+    public ResponseEntity<String> solveMaze(@org.springframework.web.bind.annotation.RequestBody(required = false) SolveRequest request) {
         Maze maze = mazeService.getActiveMaze();
         if (maze == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No active maze generated.");
         }
 
-        Cell start = maze.getCell(0, 0);
-        Cell end = maze.getCell(maze.getHeight() - 1, maze.getWidth() - 1);
+        int startR = 0;
+        int startC = 0;
+        int endR = maze.getHeight() - 1;
+        int endC = maze.getWidth() - 1;
+
+        if (request != null) {
+            startR = request.getStartRow();
+            startC = request.getStartCol();
+            if (request.getEndRow() >= 0) endR = request.getEndRow();
+            if (request.getEndCol() >= 0) endC = request.getEndCol();
+
+            if (request.getChangedCells() != null) {
+                for (SolveRequest.CellUpdate update : request.getChangedCells()) {
+                    Cell c = maze.getCell(update.getRow(), update.getColumn());
+                    if (c != null && update.getTerrain() != null) {
+                        try {
+                            c.setTerrain(TerrainType.valueOf(update.getTerrain().toUpperCase()));
+                        } catch (IllegalArgumentException ignored) {}
+                    }
+                }
+            }
+        }
+
+        Cell start = maze.getCell(startR, startC);
+        Cell end = maze.getCell(endR, endC);
         
         MazeSolver[] algorithmsToRace = {
             new BFSSolver(),

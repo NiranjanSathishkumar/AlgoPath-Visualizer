@@ -109,10 +109,10 @@ public class Maze {
         int row = cell.getRow();
         int col = cell.getColumn();
 
-        if (!cell.hasTopWall() && isValidCoordinate(row - 1, col)) neighbors.add(grid[row - 1][col]);
-        if (!cell.hasRightWall() && isValidCoordinate(row, col + 1)) neighbors.add(grid[row][col + 1]);
-        if (!cell.hasBottomWall() && isValidCoordinate(row + 1, col)) neighbors.add(grid[row + 1][col]);
-        if (!cell.hasLeftWall() && isValidCoordinate(row, col - 1)) neighbors.add(grid[row][col - 1]);
+        if (!cell.hasTopWall() && isValidCoordinate(row - 1, col) && grid[row - 1][col].getTerrain().isWalkable()) neighbors.add(grid[row - 1][col]);
+        if (!cell.hasRightWall() && isValidCoordinate(row, col + 1) && grid[row][col + 1].getTerrain().isWalkable()) neighbors.add(grid[row][col + 1]);
+        if (!cell.hasBottomWall() && isValidCoordinate(row + 1, col) && grid[row + 1][col].getTerrain().isWalkable()) neighbors.add(grid[row + 1][col]);
+        if (!cell.hasLeftWall() && isValidCoordinate(row, col - 1) && grid[row][col - 1].getTerrain().isWalkable()) neighbors.add(grid[row][col - 1]);
         
         return neighbors;
     }
